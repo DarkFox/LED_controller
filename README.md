@@ -11,6 +11,7 @@ Software
 ------------
 * Arduino (duh)
 * Ruby
+* JQuery Mobile
 
 Ruby gems
 ------------
