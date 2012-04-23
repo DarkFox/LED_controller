@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>
+        </title>
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.css" />
+        <style>
+        	#currentcolor {
+            float: right;
+            margin: 7px;
+            width: 40px;
+            height: 20px;
+            border: 2px solid hsl(0, 0%, 70%);
+            border-radius: 8px;
+          }
+        </style>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.js"></script>
+        <script type="text/javascript">
+            var lastMode;
+            var lastHue;
+            var lastSat;
+            var lastLum;
+            var lastInterval;
+
+            $(document).ready(function() {
+                getCurrentState();
+
+                lastMode =      $('#mode').val();
+                lastHue =       $('#hue').val();
+                lastSat =       $('#sat').val();
+                lastLum =       $('#lum').val();
+                lastInterval =  $('#interval').val();
+
+                sendData();
+
+                updatePreview();
+                updatePercentages()
+
+                $('#hue, #sat, #lum').bind('change', function(){
+                    updatePreview();
+                    updatePercentages();
+                });
+
+                $('#save').bind('click', function(event){
+                    event.stopPropagation();
+                    $.get("/save", params);
+                });
+
+                $('#update').bind('click', function(event){
+                    event.stopPropagation();
+                    getCurrentState();
+                });
+            });
+
+            function updatePreview() {
+                hue = $('#hue').val();
+                sat = Math.round(byte2per($('#sat').val()));
+                lum = Math.round(byte2per($('#lum').val()));
+                $('#currentcolor').css("background-color", "hsl("+hue+", "+sat+"%, "+lum+"%)");
+            }
+
+            function updatePercentages() {
+                $('#satPer').html(
+                    Math.round(byte2per($('#sat').val()))
+                );
+                $('#lumPer').html(
+                    Math.round(byte2per($('#lum').val()))
+                );
+            }
+
+            function getCurrentState() {
+                $.get("/state", function(data){
+                    $('#mode').val(data.mode).selectmenu('refresh');
+                    $('#hue').val(data.hue).slider('refresh');
+                    $('#sat').val(data.sat).slider('refresh');
+                    $('#lum').val(data.lum).slider('refresh');
+                    $('#interval').val(data.interval).slider('refresh');
+                }, "json");
+            }
+
+            function sendData() {
+                mode = $('#mode').val();
+                hue = $('#hue').val();
+                sat = $('#sat').val();
+                lum = $('#lum').val();
+                interval = $('#interval').val();
+
+                params = new Array;
+                if (mode != lastMode) { params.push({name: 'mode', value: mode}); }
+                if (hue != lastHue) { params.push({name: 'h', value: hue}); }
+                if (sat != lastSat) { params.push({name: 's', value: sat}); }
+                if (lum != lastLum) { params.push({name: 'l', value: lum}); }
+                if (interval != lastInterval) { params.push({name: 'interval', value: interval}); }
+
+                lastMode = mode;
+                lastHue = hue;
+                lastSat = sat;
+                lastLum = lum;
+                lastInterval = interval;
+
+                if (params.length > 0) {
+                    $.get("/led", params);
+                }
+                setTimeout( "sendData();", 500 );
+            }
+
+            function per2byte (num) {
+                return 0 + (num - 0) * (255 - 0) / (100 - 0);
+            }
+            function byte2per (num) {
+                return 0 + (num - 0) * (100 - 0) / (255 - 0);
+            }
+        </script>
+    </head>
+    <body>
+        <div data-role="page" id="page1">
+            <div data-theme="a" data-role="header" data-position="fixed">
+            	<div id="currentcolor"></div>
+                <h3>
+                    LED Controller
+                </h3>
+                <a data-role="button" data-inline="true" data-transition="fade" data-theme="b" id="update" href="#">
+                    Update
+                </a>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <label for="mode">
+                    </label>
+                    <select name="mode" id="mode">
+                        <option value="0">OFF</option>
+                        <option value="1">ON</option>
+                        <option value="2">Pulse</option>
+                        <option value="3">Random fade</option>
+                        <option value="4">Rainbow fade</option>
+                        <option value="5">Strobe</option>
+                        <option value="6">Sleep</option>
+                        <option value="7">Direct</option>
+                    </select>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="hue">
+                            Hue:
+                        </label>
+                        <input type="range" name="hue" id="hue" value="0" min="0" max="360" data-highlight="false" />
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="sat">
+                            Saturation:
+                        </label>
+                        <input type="range" name="sat" id="sat" value="255" min="0" max="255" data-highlight="true" />
+                        ~<span id="satPer"></span>%
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="lum">
+                            Luminosity:
+                        </label>
+                        <input type="range" name="lum" id="lum" value="127" min="0" max="255" data-highlight="true" />
+                        ~<span id="lumPer"></span>%
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="interval">
+                            Interval:
+                        </label>
+                        <input type="range" name="interval" id="interval" value="50" min="0" max="2048" data-highlight="true" />
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
