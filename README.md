@@ -22,4 +22,4 @@ Stuff used
 
 Screenshot
 ------------
-![Screenshot](raw/master/screenshot.png)
+![Screenshot](LED_controller/raw/master/screenshot.png)
