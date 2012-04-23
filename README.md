@@ -22,4 +22,4 @@ Stuff used
 
 Screenshot
 ------------
-![Screenshot](screenshot.png)
+![Screenshot](raw/master/screenshot.png)
