@@ -6,6 +6,8 @@ class LedController
   @lock = false
   @serial = nil
 
+  attr_accessor :serial, :lock
+
   def initialize(port_str)
     baud_rate = 9600
     data_bits = 8
@@ -53,6 +55,7 @@ class LedController
     # Clear out the buffer first.
     if @lock
       puts 'Serial interface locked'
+      return false
     else
       @lock = true
       begin
@@ -60,16 +63,17 @@ class LedController
       rescue EOFError => e
       end
       commands.each do |command|
-        @serial.putc(command)
+        @serial.write(command)
         begin
           @serial.readbyte
         rescue EOFError => e
           puts 'Giving up.'
           @lock = false
-          return
+          return false
         end
       end
       @lock = false
+      return true
     end
   end
 end
