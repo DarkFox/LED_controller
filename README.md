@@ -11,7 +11,7 @@ Stuff used
 * A set of IKEA "DIODER" RGB lamps
 
 ### Software
-* Arduino (duh)
+* Arduino
 * Ruby
 * JQuery Mobile
 
