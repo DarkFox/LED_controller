@@ -5,7 +5,7 @@
 #include <SerialCommand.h>
 
 /*
-RGB LED IR controller for Arduino
+LED Controller for Arduino
 By Martin "DarkFox" Eberhardt
 http://darkfox.dk/
 */
