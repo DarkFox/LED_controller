@@ -2,7 +2,7 @@ require 'rubygems'
 require 'sinatra'
 require './led_controller.rb'
 
-CONTROLLER = LedController.new("/dev/tty.usbmodem1a21")
+CONTROLLER = LedController.new("/dev/tty.usbmodemfd121")
 
 get '/' do
   erb :'index.html'
@@ -37,4 +37,6 @@ get '/led' do
     CONTROLLER.set_interval params[:interval]
     'OK'
   end
+
+  CONTROLLER.save
 end
