@@ -6,11 +6,8 @@
 
 /*
 RGB LED IR controller for Arduino
-By Martin "DarkFox" Eberhardt 2009-12-29
+By Martin "DarkFox" Eberhardt
 http://darkfox.dk/
-
-Based on RGB LED controller by Markus Ulfberg 2009-05-19
-http://genericnerd.blogspot.com/2009/05/arduino-mood-light-controller.html
 */
 
 // set the ledPins
