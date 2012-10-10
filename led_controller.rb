@@ -3,6 +3,8 @@ require 'serialport'
 require 'json'
 
 class LedController
+  # Maximum stable rate of commands seems to be around 55.6 Hz (Or 18 ms between each command) in direct serial mode.
+
   @lock = false
   @serial = nil
 
@@ -19,61 +21,68 @@ class LedController
   end
 
   def current_state
-    send_serial_cmds [6, 1]
+    # Flush buffer first
+    @serial.readline
+    send_cmd "STATE"
     state = @serial.readline
     JSON.parse(state)
   end
 
   def set_mode(mode)
-    send_serial_cmds [1, mode.to_i]
+    send_cmd "MODE #{mode.to_i}"
   end
 
   def set_h(h)
-    v1 = h.to_i / 255;
-    v2 = h.to_i % 255;
-
-    send_serial_cmds [2, v1, v2]
+    send_cmd "HUE #{h.to_i}"
   end
 
   def set_s(s)
-    send_serial_cmds [3, s.to_i]
+    send_cmd "SAT #{s.to_i}"
   end
 
   def set_l(l)
-    send_serial_cmds [4, l.to_i]
+    send_cmd "LUM #{l.to_i}"
+  end
+
+  def write_hsl
+    send_cmd "WRITEHSL"
+  end
+
+  def set_hsl(h, s, l)
+    send_cmd "SETHSL #{h.to_i} #{s.to_i} #{l.to_i}"
   end
 
   def set_interval(interval)
-    v1 = interval.to_i / 255;
-    v2 = interval.to_i % 255;
-    send_serial_cmds [5, v1, v2]
+    send_cmd "INTERVAL #{interval.to_i}"
+  end
+
+  def set_red(pwr)
+    send_cmd "RED #{pwr.to_i}"
+  end
+
+  def set_grn(pwr)
+    send_cmd "GRN #{pwr.to_i}"
+  end
+
+  def set_blu(pwr)
+    send_cmd "BLU #{pwr.to_i}"
+  end
+
+  def write_rgb
+    send_cmd "WRITERGB"
+  end
+
+  def set_rgb(r, g, b)
+    send_cmd "SETRGB #{r.to_i} #{g.to_i} #{b.to_i}"
+  end
+
+  def save
+    send_cmd "SAVE"
   end
 
   private
 
-  def send_serial_cmds(commands = [])
-    # Clear out the buffer first.
-    if @lock
-      puts 'Serial interface locked'
-      return false
-    else
-      @lock = true
-      begin
-        @serial.readlines
-      rescue EOFError => e
-      end
-      commands.each do |command|
-        @serial.write(command)
-        begin
-          @serial.readbyte
-        rescue EOFError => e
-          puts 'Giving up.'
-          @lock = false
-          return false
-        end
-      end
-      @lock = false
-      return true
-    end
+  def send_cmd(command)
+    @serial.write(command+"\n")
   end
 end

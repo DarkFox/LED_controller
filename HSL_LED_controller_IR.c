@@ -2,11 +2,15 @@
 #include <EEPROM.h>
 #include <IRremote.h>
 #include <IRremoteInt.h>
+#include <SerialCommand.h>
 
 /*
-HSL LED IR controller for Arduino
+RGB LED IR controller for Arduino
 By Martin "DarkFox" Eberhardt 2009-12-29
 http://darkfox.dk/
+
+Based on RGB LED controller by Markus Ulfberg 2009-05-19
+http://genericnerd.blogspot.com/2009/05/arduino-mood-light-controller.html
 */
 
 // set the ledPins
@@ -20,13 +24,7 @@ int RECV_PIN = 2;
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 
-byte serialMode = 0;
-byte getSerialBigInt = 0;
-int serialTimeout = 500;
-long serialPreviousCmd;
-
-int serialBigInt1;
-int serialBigInt2;
+SerialCommand sCmd;
 
 // LED Power variables
 byte redPwr = 0;
@@ -84,7 +82,103 @@ void setup()
 
   // serial
   Serial.begin(9600);
+
+  // Setup callbacks for SerialCommand commands
+  sCmd.addCommand("MODE",  s_mode); // (int mode) Set light mode
+  sCmd.addCommand("HUE",  s_hue); // (bigint hue) Set hue
+  sCmd.addCommand("SAT",  s_sat); // (int sat) Set saturation
+  sCmd.addCommand("LUM",  s_lum); // (int lum) Set luminescence
+  sCmd.addCommand("INTERVAL",  s_interval); // (bigint interval) Set interval
+  sCmd.addCommand("SETHSL", s_set_hsl); // (bigint hue, int sat, int lum) Set hue, saturation and luminescence in one command
+  sCmd.addCommand("WRITEHSL", s_write_hsl); // Write to LEDs using HSL values
+  sCmd.addCommand("RED", s_red); // (int pwr) Write red power
+  sCmd.addCommand("GRN", s_grn); // (int pwr) Write green power
+  sCmd.addCommand("BLU", s_blu); // (int pwr) Write blue power
+  sCmd.addCommand("SETRGB", s_set_rgb); // (int red, int grn, int blu) Set red, green and blue in one command
+  sCmd.addCommand("WRITERGB", s_write_rgb); // Write to LEDs using RGB values
+  sCmd.addCommand("SAVE", s_save_state); // Save state to EEPROM
+  sCmd.addCommand("STATE", printInfoToSerial); // Get current state
+  sCmd.setDefaultHandler(unrecognized);      // Handler for command that isn't matched
+
   Serial.println("--RGB LED controller booted and ready--");
+}
+
+// This gets set as the default handler, and gets called when no other command matches.
+void unrecognized(const char *command) {
+  Serial.println("UNRECOGNIZED");
+}
+
+void s_mode() {
+  int aNumber;
+  aNumber = get_serial_number();
+  changeMode(aNumber);
+}
+
+void s_hue() {
+  hueVal = get_serial_number();
+}
+
+void s_sat() {
+  satVal = get_serial_number();
+}
+
+void s_lum() {
+  lumVal = get_serial_number();
+}
+
+void s_interval() {
+  interval = get_serial_number();
+}
+
+void s_set_hsl() {
+  hueVal = get_serial_number();
+  satVal = get_serial_number();
+  lumVal = get_serial_number();
+}
+
+void s_write_hsl() {
+  hslWrite();
+}
+
+void s_red() {
+  redPwr = get_serial_number();
+}
+
+void s_grn() {
+  greenPwr = get_serial_number();
+}
+
+void s_blu() {
+  bluePwr = get_serial_number();
+}
+
+void s_set_rgb() {
+  redPwr = get_serial_number();
+  greenPwr = get_serial_number();
+  bluePwr = get_serial_number();
+  writeLED();
+}
+
+void s_write_rgb() {
+  writeLED();
+}
+
+void s_save_state() {
+  saveState();
+}
+
+int get_serial_number() {
+  int aNumber;
+  char *arg;
+  arg = sCmd.next();
+
+  if (arg != NULL) {
+    aNumber = atoi(arg);
+    return aNumber;
+  } else {
+    Serial.println("ERROR");
+    return NULL;
+  }
 }
 
 void loadConfig() {
@@ -101,37 +195,43 @@ void loadConfig() {
 
 void loop()
 {
-  getIrCmd();
-  getSerialCmd();
+  sCmd.readSerial();
 
-  switch(lightMode) {
-    case 0:
+  // Save clockcycles when running in serial mode.
+  if (lightMode != 99) {
+    getIrCmd();
+
+    switch(lightMode) {
+      case 0:
+        mdOff();
+      break;
+      case 1:
+        mdSolid();
+      break;
+      case 2:
+        mdPulse();
+      break;
+      case 3:
+        mdRandomFade();
+      break;
+      case 4:
+        mdRainbow();
+      break;
+      case 5:
+        mdStrobe();
+      break;
+      case 6:
+        mdSleep();
+      break;
+      case 7:
+        mdDirect();
+      break;
+      case 99:
+        // Freewheeling, let serial run the show. (Doesn't actually get into this loop)
+      break;
+      default:
       mdOff();
-      break;
-    case 1:
-      mdSolid();
-      break;
-    case 2:
-      mdPulse();
-      break;
-    case 3:
-      mdRandomFade();
-      break;
-    case 4:
-      mdRainbow();
-      break;
-    case 5:
-      mdStrobe();
-      break;
-    case 6:
-      mdSleep();
-      break;
-    case 7:
-      mdDirect();
-      break;
-    default:
-      mdOff();
-      break;
+    }
   }
 }
 
@@ -582,75 +682,6 @@ void getIrCmd() {
   } // End IR control
 }
 
-void getSerialCmd() {
-  // check if data has been sent from the computer:
-  if (Serial.available() > 0) {
-    // Reset if last command was too long ago.
-    if (millis() - serialPreviousCmd > serialTimeout) {
-      serialMode = 0;
-    }
-    serialPreviousCmd = millis();
-    switch (serialMode) {
-      case 0:
-        // Set serial mode.
-        serialMode = Serial.read();
-        Serial.write(1);
-        break;
-      case 1:
-        // Change light mode.
-        changeMode(Serial.read());
-        serialMode = 0;
-        Serial.write(1);
-        break;
-      case 2:
-        // Set hue, 2 (2 rounds)
-        if (getSerialBigInt == 0) {
-          serialBigInt1 = Serial.read();
-          getSerialBigInt = 1;
-        } else {
-          serialBigInt2 = Serial.read();
-          hueVal = serialBigInt1 * 255 + serialBigInt2;
-          getSerialBigInt = 0;
-          serialMode = 0;
-        }
-        Serial.write(1);
-        break;
-      case 3:
-        // Set saturation
-        satVal = Serial.read();
-        serialMode = 0;
-        Serial.write(1);
-        break;
-      case 4:
-        // Set luminescence
-        lumVal = Serial.read();
-        serialMode = 0;
-        Serial.write(1);
-        break;
-      case 5:
-        // Set interval
-        if (getSerialBigInt == 0) {
-          serialBigInt1 = Serial.read();
-          getSerialBigInt = 1;
-        } else {
-          serialBigInt2 = Serial.read();
-          interval = serialBigInt1 * 255 + serialBigInt2;
-          getSerialBigInt = 0;
-          serialMode = 0;
-        }
-        Serial.write(1);
-        break;
-      case 6:
-        Serial.read();
-        // Print info to serial
-        Serial.write(1);
-        printInfoToSerial();
-        break;
-    }
-    saveState();
-  }
-}
-
 void saveState() {
   EEPROM.write(0, lightMode);
   saveBig(hueVal, 1, 2);
@@ -671,6 +702,12 @@ void printInfoToSerial() {
   Serial.print(lumVal, DEC);
   Serial.print(",\"interval\":");
   Serial.print(interval, DEC);
+  Serial.print(",\"red\":");
+  Serial.print(redPwr, DEC);
+  Serial.print(",\"grn\":");
+  Serial.print(greenPwr, DEC);
+  Serial.print(",\"blu\":");
+  Serial.print(bluePwr, DEC);
   Serial.println("}");
 }
 
@@ -695,6 +732,7 @@ void changeMode(int mode) {
   }
 
   lightMode = mode;
+  menu = 0;
 }
 
 void turnOn(int mode) {
