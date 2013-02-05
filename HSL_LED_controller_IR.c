@@ -65,6 +65,7 @@ int pulseDir = 0;     // Pulse direction
 
 void setup()
 {
+  bitSet(TCCR1B, WGM12);
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
   pinMode(bluePin, OUTPUT);
