@@ -31,21 +31,21 @@ get '/led' do
   # Hue
   # 0-360
   if params[:hue]
-    CONTROLLER.set_h params[:hue]
+    CONTROLLER.set_hue params[:hue]
     'OK'
   end
 
   # Saturation
   # 0-255
   if params[:sat]
-    CONTROLLER.set_s params[:sat]
+    CONTROLLER.set_sat params[:sat]
     'OK'
   end
 
   # Luminosity
   # 0-255
   if params[:lum]
-    CONTROLLER.set_l params[:lum]
+    CONTROLLER.set_lum params[:lum]
     'OK'
   end
 

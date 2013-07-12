@@ -32,16 +32,16 @@ class LedController
     send_cmd "MODE #{mode.to_i}"
   end
 
-  def set_h(h)
-    send_cmd "HUE #{h.to_i}"
+  def set_hue(hue)
+    send_cmd "HUE #{hue.to_i}"
   end
 
-  def set_s(s)
-    send_cmd "SAT #{s.to_i}"
+  def set_sat(sat)
+    send_cmd "SAT #{sat.to_i}"
   end
 
-  def set_l(l)
-    send_cmd "LUM #{l.to_i}"
+  def set_lum(lum)
+    send_cmd "LUM #{lum.to_i}"
   end
 
   def write_hsl
