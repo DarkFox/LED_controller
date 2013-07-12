@@ -2,7 +2,17 @@ require 'rubygems'
 require "sinatra/base"
 require File.expand_path '../led_controller.rb', __FILE__
 
-CONTROLLER = LedController.new("/dev/tty.usbmodemfd121")
+set :bind, '0.0.0.0'
+
+class FakeController
+  def method_missing(meth, *args, &block)
+    return true
+  end
+end
+
+#CONTROLLER = LedController.new("/dev/tty.usbmodemfd121")
+CONTROLLER = FakeController.new
+
 
 class WebLedController < Sinatra::Base
   get '/' do
