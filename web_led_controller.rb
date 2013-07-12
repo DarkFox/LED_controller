@@ -13,26 +13,44 @@ get '/state' do
 end
 
 get '/led' do
+
+  # Modes
+  # 0: OFF
+  # 1: ON
+  # 2: Pulse
+  # 3: Random fade
+  # 4: Rainbow fade
+  # 5: Strobe
+  # 6: Sleep
+  # 7: Direct
   if params[:mode]
     CONTROLLER.set_mode params[:mode]
     'OK'
   end
 
-  if params[:h]
-    CONTROLLER.set_h params[:h]
+  # Hue
+  # 0-360
+  if params[:hue]
+    CONTROLLER.set_h params[:hue]
     'OK'
   end
 
-  if params[:s]
-    CONTROLLER.set_s params[:s]
+  # Saturation
+  # 0-255
+  if params[:sat]
+    CONTROLLER.set_s params[:sat]
     'OK'
   end
 
-  if params[:l]
-    CONTROLLER.set_l params[:l]
+  # Luminosity
+  # 0-255
+  if params[:lum]
+    CONTROLLER.set_l params[:lum]
     'OK'
   end
 
+  # Interval
+  # 0-2048
   if params[:interval]
     CONTROLLER.set_interval params[:interval]
     'OK'
