@@ -1,6 +1,6 @@
 require 'rubygems'
 require "sinatra/base"
-require './led_controller.rb'
+require File.expand_path '../led_controller.rb', __FILE__
 
 CONTROLLER = LedController.new("/dev/tty.usbmodemfd121")
 
