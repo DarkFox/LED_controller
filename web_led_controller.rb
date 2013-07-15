@@ -20,11 +20,10 @@ class WebLedController < Sinatra::Base
   end
 
   get '/state' do
-    [200,{"Content-Type" => "text/json"}, [CONTROLLER.current_state.to_json]]
+    CONTROLLER.current_state.to_json
   end
 
   get '/led' do
-
     # Modes
     # 0: OFF
     # 1: ON
@@ -34,39 +33,26 @@ class WebLedController < Sinatra::Base
     # 5: Strobe
     # 6: Sleep
     # 7: Direct
-    if params[:mode]
-      CONTROLLER.set_mode params[:mode]
-      [200,{"Content-Type" => "text/plain"}, ["OK"]]
-    end
+    CONTROLLER.set_mode params[:mode] if params[:mode]
 
     # Hue
     # 0-360
-    if params[:hue]
-      CONTROLLER.set_hue params[:hue]
-      [200,{"Content-Type" => "text/plain"}, ["OK"]]
-    end
+    CONTROLLER.set_hue params[:hue] if params[:hue]
 
     # Saturation
     # 0-255
-    if params[:sat]
-      CONTROLLER.set_sat params[:sat]
-      [200,{"Content-Type" => "text/plain"}, ["OK"]]
-    end
+    CONTROLLER.set_sat params[:sat] if params[:sat]
 
     # Luminosity
     # 0-255
-    if params[:lum]
-      CONTROLLER.set_lum params[:lum]
-      [200,{"Content-Type" => "text/plain"}, ["OK"]]
-    end
+    CONTROLLER.set_lum params[:lum] if params[:lum]
 
     # Interval
     # 0-2048
-    if params[:interval]
-      CONTROLLER.set_interval params[:interval]
-      [200,{"Content-Type" => "text/plain"}, ["OK"]]
-    end
+    CONTROLLER.set_interval params[:interval] if params[:interval]
 
     CONTROLLER.save
+
+    'OK'
   end
 end
