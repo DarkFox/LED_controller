@@ -20,7 +20,7 @@ class WebLedController < Sinatra::Base
   end
 
   get '/state' do
-    CONTROLLER.current_state.to_json
+    [200,{"Content-Type" => "text/json"}, [CONTROLLER.current_state.to_json]]
   end
 
   get '/led' do
@@ -36,35 +36,35 @@ class WebLedController < Sinatra::Base
     # 7: Direct
     if params[:mode]
       CONTROLLER.set_mode params[:mode]
-      'OK'
+      [200,{"Content-Type" => "text/plain"}, ["OK"]]
     end
 
     # Hue
     # 0-360
     if params[:hue]
       CONTROLLER.set_hue params[:hue]
-      'OK'
+      [200,{"Content-Type" => "text/plain"}, ["OK"]]
     end
 
     # Saturation
     # 0-255
     if params[:sat]
       CONTROLLER.set_sat params[:sat]
-      'OK'
+      [200,{"Content-Type" => "text/plain"}, ["OK"]]
     end
 
     # Luminosity
     # 0-255
     if params[:lum]
       CONTROLLER.set_lum params[:lum]
-      'OK'
+      [200,{"Content-Type" => "text/plain"}, ["OK"]]
     end
 
     # Interval
     # 0-2048
     if params[:interval]
       CONTROLLER.set_interval params[:interval]
-      'OK'
+      [200,{"Content-Type" => "text/plain"}, ["OK"]]
     end
 
     CONTROLLER.save
