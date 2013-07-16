@@ -20,6 +20,8 @@
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script src="http://code.jquery.com/mobile/1.1.0/jquery.mobile-1.1.0.min.js"></script>
         <script type="text/javascript">
+            var rate = 250; // Set the rate at which changes are sent.
+
             var lastMode;
             var lastHue;
             var lastSat;
@@ -105,7 +107,7 @@
                 if (params.length > 0) {
                     $.get("/led", params);
                 }
-                setTimeout( "sendData();", 50 );
+                setTimeout( "sendData();", rate );
             }
 
             function per2byte (num) {
@@ -174,6 +176,13 @@
                             Interval:
                         </label>
                         <input type="range" name="interval" id="interval" value="50" min="0" max="2048" data-highlight="true" />
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <a data-role="button" data-inline="true" data-transition="fade" data-theme="b" id="save" href="#">
+                            Save
+                        </a>
                     </fieldset>
                 </div>
             </div>
