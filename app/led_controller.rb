@@ -22,7 +22,11 @@ class LedController
 
   def current_state
     # Flush buffer first
-    @serial.readline
+    begin
+      @serial.readline
+    rescue => e
+      # Do nothing
+    end
     send_cmd "STATE"
     state = @serial.readline
     JSON.parse(state)
