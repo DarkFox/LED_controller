@@ -8,7 +8,8 @@ Stuff used
 * ULN2003 IC
 * IR Receiver
 * Spare IR remote control
-* A set of IKEA "DIODER" RGB lamps
+* IKEA "DIODER" RGB lamps
+* Raspberry Pi
 
 ### Software
 * Arduino
@@ -19,6 +20,7 @@ Stuff used
 * ruby-serialport
 * json
 * sinatra
+* unicorn
 
 Screenshot
 ------------
