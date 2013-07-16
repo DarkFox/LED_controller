@@ -51,8 +51,6 @@ class WebLedController < Sinatra::Base
     # 0-2048
     CONTROLLER.set_interval params[:interval] if params[:interval]
 
-    CONTROLLER.save
-
     'OK'
   end
 end
