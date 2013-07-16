@@ -22,4 +22,4 @@ Stuff used
 
 Screenshot
 ------------
-![Screenshot](LED_controller/raw/master/screenshot.png)
+![Screenshot](https://raw.github.com/DarkFox/LED_controller/master/screenshot.png)
