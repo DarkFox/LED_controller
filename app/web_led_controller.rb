@@ -60,5 +60,7 @@ class WebLedController < Sinatra::Base
 
   get '/save' do
     CONTROLLER.save
+
+    'OK'
   end
 end
