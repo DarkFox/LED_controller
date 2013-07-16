@@ -2,9 +2,11 @@ require 'rubygems'
 require "sinatra/base"
 require File.expand_path '../led_controller.rb', __FILE__
 
-set :bind, '0.0.0.0'
-
 class FakeController
+  def current_state
+    {mode: 1, hue: 64, lum: 128, sat: 255, interval: 500}
+  end
+
   def method_missing(meth, *args, &block)
     return true
   end
@@ -15,6 +17,8 @@ CONTROLLER = FakeController.new
 
 
 class WebLedController < Sinatra::Base
+  set :bind, '0.0.0.0'
+
   get '/' do
     erb :'index.html'
   end
@@ -52,5 +56,9 @@ class WebLedController < Sinatra::Base
     CONTROLLER.set_interval params[:interval] if params[:interval]
 
     'OK'
+  end
+
+  get '/save' do
+    CONTROLLER.save
   end
 end
